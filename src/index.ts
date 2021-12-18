@@ -90,9 +90,6 @@ export class MongoStoreServer {
         });*/
 
         // Mongostore APIs
-        this.server.all("/test", (req, res) => {
-            res.send("TEST");
-        });
         this.server.post("/mongostore/store", async (req, res) => {
             await this.handler.handler(req, res);
         });
