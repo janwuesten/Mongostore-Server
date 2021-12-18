@@ -3,6 +3,7 @@ import cors from 'cors';
 import {MongoStoreHandler} from './store';
 import path from 'path';
 import { Db, Document } from 'mongodb';
+import { MongoStoreTriggers } from './triggers';
 
 export class MongoStoreConfig {
     port: number = 500;
@@ -69,6 +70,7 @@ export class MongoStoreServer {
     private config: MongoStoreConfig;
     private rules: MongoStoreRules;
     private handler: MongoStoreHandler;
+    private triggerHandler: MongoStoreTriggers;
 
     constructor() {
         this.rules = async (store, req, res): Promise<void> => {};
@@ -115,6 +117,9 @@ export class MongoStoreServer {
     }
     getConfig(): MongoStoreConfig {
         return this.config;
+    }
+    triggers(): MongoStoreTriggers {
+        return this.triggerHandler;
     }
     express(): Express | null {
         if(this.server) {

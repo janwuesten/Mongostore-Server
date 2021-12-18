@@ -1,10 +1,10 @@
 import { Db, Document } from "mongodb";
 
-class MongoStoreTriggers {
-    documentGetTriggers: MongoStoreGetTrigger[];
-    documentAddTriggers: MongoStoreAddedTrigger[];
-    documentUpdateTriggers: MongoStoreUpdatedTrigger[];
-    documentDeleteTriggers: MongoStoreDeletedTrigger[];
+export class MongoStoreTriggers {
+    private documentGetTriggers: MongoStoreGetTrigger[];
+    private documentAddTriggers: MongoStoreAddedTrigger[];
+    private documentUpdateTriggers: MongoStoreUpdatedTrigger[];
+    private documentDeleteTriggers: MongoStoreDeletedTrigger[];
     constructor() {
         this.documentGetTriggers = [];
         this.documentAddTriggers = [];
@@ -23,6 +23,8 @@ class MongoStoreTriggers {
     documentDelete(collection: string, trigger: (store: Db, deleted: Document) => void) {
         this.documentDeleteTriggers.push(new MongoStoreDeletedTrigger(collection, trigger))
     }
+    
+    /** @internal */
     runDocumentGetTrigers(collection: string, store: Db, document: Document) {
         for(var index in this.documentGetTriggers) {
             if(this.documentGetTriggers[index].collection == collection) {
@@ -30,6 +32,7 @@ class MongoStoreTriggers {
             }
         }
     }
+    /** @internal */
     runDocumentAddTrigers(collection: string, store: Db, added: Document) {
         for(var index in this.documentAddTriggers) {
             if(this.documentAddTriggers[index].collection == collection) {
@@ -37,6 +40,7 @@ class MongoStoreTriggers {
             }
         }
     }
+    /** @internal */
     runDocumentUpdateTriggers(collection: string, store: Db, before: Document, after: Document) {
         for(var index in this.documentUpdateTriggers) {
             if(this.documentUpdateTriggers[index].collection == collection) {
@@ -44,6 +48,7 @@ class MongoStoreTriggers {
             }
         }
     }
+    /** @internal */
     runDocumentDeletedTriggers(collection: string, store: Db, deleted: Document) {
         for(var index in this.documentDeleteTriggers) {
             if(this.documentDeleteTriggers[index].collection == collection) {
@@ -85,4 +90,3 @@ class MongoStoreAddedTrigger {
         this.trigger = trigger;
     }
 }
-export default new MongoStoreTriggers();

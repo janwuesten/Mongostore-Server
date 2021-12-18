@@ -8,7 +8,6 @@ import actionSet from './actions/set';
 import actionUpdate from './actions/update';
 import actionDelete from './actions/delete';
 import { MongoStoreRulesRequest, MongoStoreRulesResponse, MongoStoreServer } from '..';
-import triggers from '../triggers';
 
 export class MongoStoreHandler {
     private server: MongoStoreServer;
@@ -89,7 +88,7 @@ export class MongoStoreHandler {
             data._id = result.insertedId.toHexString();
             response.documents.push(data);
             if(!bypassTriggers) {
-                triggers.runDocumentAddTrigers(collection, store, data);
+                this.server.triggers().runDocumentAddTrigers(collection, store, data);
             }
         }else{
             response.response = "invalid_permissions";
@@ -130,7 +129,7 @@ export class MongoStoreHandler {
                     response.documents.push(beforeData);
                     await store.collection(collection).deleteOne(mongoQuery);
                     if(!bypassTriggers) {
-                        triggers.runDocumentDeletedTriggers(collection, store, beforeData);
+                        this.server.triggers().runDocumentDeletedTriggers(collection, store, beforeData);
                     }
                 }else{
                     response.response = "invalid_permissions";
@@ -162,7 +161,7 @@ export class MongoStoreHandler {
                         response.documents.push(beforeData);
                         await store.collection(collection).deleteOne({_id: new ObjectId(beforeData._id)});
                         if(!bypassTriggers) {
-                            triggers.runDocumentDeletedTriggers(collection, store, beforeData);
+                            this.server.triggers().runDocumentDeletedTriggers(collection, store, beforeData);
                         }
                     }
                 }
@@ -203,7 +202,7 @@ export class MongoStoreHandler {
                 if(rulesResponse.get || bypassRules) {
                     response.documents.push(result);
                     if(!bypassTriggers) {
-                        triggers.runDocumentGetTrigers(collection, store, result);
+                        this.server.triggers().runDocumentGetTrigers(collection, store, result);
                     }
                 }else{
                     response.response = "invalid_permissions";
@@ -235,7 +234,7 @@ export class MongoStoreHandler {
                     if(rulesResponse.find || bypassRules) {
                         response.documents.push(item);
                         if(!bypassTriggers) {
-                            triggers.runDocumentGetTrigers(collection, store, item);
+                            this.server.triggers().runDocumentGetTrigers(collection, store, item);
                         }
                     }
                 }
@@ -280,7 +279,7 @@ export class MongoStoreHandler {
                     response.documents.push(afterData);
                     await store.collection(collection).replaceOne(mongoQuery, afterData);
                     if(!bypassTriggers) {
-                        triggers.runDocumentUpdateTriggers(collection, store, beforeData, afterData);
+                        this.server.triggers().runDocumentUpdateTriggers(collection, store, beforeData, afterData);
                     }
                 }else{
                     response.response = "invalid_permissions";
@@ -315,7 +314,7 @@ export class MongoStoreHandler {
                         response.documents.push(afterData);
                         await store.collection(collection).replaceOne({_id: new ObjectId(beforeData._id)}, afterData);
                         if(!bypassTriggers) {
-                            triggers.runDocumentUpdateTriggers(collection, store, beforeData, afterData);
+                            this.server.triggers().runDocumentUpdateTriggers(collection, store, beforeData, afterData);
                         }
                     }
                 }
@@ -362,7 +361,7 @@ export class MongoStoreHandler {
                         $set: afterData
                     });
                     if(!bypassTriggers) {
-                        triggers.runDocumentUpdateTriggers(collection, store, beforeData, afterData);
+                        this.server.triggers().runDocumentUpdateTriggers(collection, store, beforeData, afterData);
                     }
                 }else{
                     response.response = "invalid_permissions";
@@ -399,7 +398,7 @@ export class MongoStoreHandler {
                             $set: afterData
                         });
                         if(!bypassTriggers) {
-                            triggers.runDocumentUpdateTriggers(collection, store, beforeData, afterData);
+                            this.server.triggers().runDocumentUpdateTriggers(collection, store, beforeData, afterData);
                         }
                     }
                 }
