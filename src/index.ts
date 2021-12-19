@@ -4,23 +4,27 @@ import {MongoStoreHandler} from './store'
 import { MongoStoreTriggers } from './triggers'
 import { MongoStoreConfig } from './classes/Configuration'
 import { MongoStoreRules } from './classes/Rules'
+import { MongoStoreAdmin } from './admin'
 
 export class MongoStoreServer {
-    private server: Express
-    private config: MongoStoreConfig
-    private rules: MongoStoreRules
-    private handler: MongoStoreHandler
-    private triggerHandler: MongoStoreTriggers
+    private _server: Express
+    private _config: MongoStoreConfig
+    private _rules: MongoStoreRules
+    private _handler: MongoStoreHandler
+    private _triggerHandler: MongoStoreTriggers
+    private _admin: MongoStoreAdmin
 
     constructor() {
-        this.rules = async (store, req, res): Promise<void> => {}
-        this.config = new MongoStoreConfig()
-        this.server = express()
-        this.handler = new MongoStoreHandler(this)
+        this._rules = async (store, req, res): Promise<void> => {}
+        this._config = new MongoStoreConfig()
+        this._server = express()
+        this._handler = new MongoStoreHandler(this)
+        this._triggerHandler = new MongoStoreTriggers(this)
+        this._admin = new MongoStoreAdmin(this)
         
-        this.server.use(express.json())
-        this.server.use(express.urlencoded({ extended: true }))
-        this.server.use(cors())
+        this._server.use(express.json())
+        this._server.use(express.urlencoded({ extended: true }))
+        this._server.use(cors())
         
         /*const staticPath = path.join(__dirname, '..', '..', 'hosting')
         this.server.use(express.static(staticPath))
@@ -32,39 +36,50 @@ export class MongoStoreServer {
         })*/
 
         // Mongostore APIs
-        this.server.post("/mongostore/store", async (req, res) => {
-            await this.handler.handler(req, res)
+        this._server.post("/mongostore/store", async (req, res) => {
+            await this._handler.handler(req, res)
         })
-        this.server.all("/mongostore/info", (req, res) => {
+        this._server.all("/mongostore/info", (req, res) => {
             res.send({
                 response: "ok"
             })
         })
     }
-    start(): void {
-        this.server.listen(this.config.port)
-        console.log("MONGOSTORE: Server started on port " + this.config.port)
+    async start(): Promise<void> {
+        await this._handler.init()
+        this._server.listen(this._config.port)
+        console.log("MONGOSTORE: Server started on port " + this._config.port)
     }
     setRules(rules: MongoStoreRules): void {
-        this.rules = rules
+        this._rules = rules
     }
     setConfig(config: MongoStoreConfig): void {
-        this.config = config
+        this._config = config
     }
 
     getRules(): MongoStoreRules {
-        return this.rules
+        return this._rules
     }
     getConfig(): MongoStoreConfig {
-        return this.config
+        return this._config
+    }
+    getHandler(): MongoStoreHandler {
+        return this._handler;
+    }
+
+    //#region APIs
+    admin(): MongoStoreAdmin {
+        return this._admin
     }
     triggers(): MongoStoreTriggers {
-        return this.triggerHandler
+        return this._triggerHandler
     }
     express(): Express | null {
-        if(this.server) {
-            return this.server
+        if(this._server) {
+            return this._server
         }
         return null
     }
+    //#endregion
+    
 }

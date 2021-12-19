@@ -4,9 +4,5 @@ export class MongoStoreConfig {
         url: string
         database: string
     }
-    auth?: {
-        authCollectionPrefix: string
-        usernameAuth: boolean
-    }
     verbose?: boolean = false
 }

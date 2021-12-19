@@ -5,23 +5,23 @@ export type MongoStoreRules = {
 }
 export class MongoStoreRulesResponse {
     /** Allow getting a document by ID */
-    get: boolean
+    get: boolean = false
     /** Allows getting a document by Query */
-    find: boolean
+    find: boolean = false
     /** Allow adding a document */
-    add: boolean
+    add: boolean = false
     /** Allow deleting a document by ID */
-    delete: boolean
+    delete: boolean = false
     /** Allows deleting a document by Query */
-    deleteByFind: boolean
+    deleteByFind: boolean = false
     /** Allow updating a document by ID */
-    update: boolean
+    update: boolean = false
     /** Allows updating a document by Query */
-    updateByFind: boolean
+    updateByFind: boolean = false
     /** Allow setting a document by ID */
-    set: boolean
+    set: boolean = false
     /** Allows setting a document by Query */
-    setByFind: boolean
+    setByFind: boolean = false
     constructor() {
         this.get = false
     }

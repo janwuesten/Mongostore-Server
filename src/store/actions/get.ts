@@ -1,8 +1,7 @@
-import { Db } from 'mongodb'
 import * as core from 'express-serve-static-core'
 import { MongoStoreHandler, MongoStoreResponse } from '..'
 
-async function action (handler: MongoStoreHandler, store: Db, query: core.Query, auth: null, req: core.Request, res: core.Response): Promise<MongoStoreResponse> { 
+async function action (handler: MongoStoreHandler, query: core.Query, auth: null, req: core.Request, res: core.Response): Promise<MongoStoreResponse> { 
     var response: MongoStoreResponse = new MongoStoreResponse()
     if(!query.hasOwnProperty("collection") || (!query.hasOwnProperty("query") && !query.hasOwnProperty("document"))) {
         response.response = "invalid_request"
@@ -14,9 +13,9 @@ async function action (handler: MongoStoreHandler, store: Db, query: core.Query,
     //}
     var searchForId = query.hasOwnProperty("document")
     if(searchForId) {
-        response = await handler.get(query.collection as string, query.document as string, null, store)
+        response = await handler.get(query.collection as string, query.document as string, null)
     }else{
-        response = await handler.get(query.collection as string, JSON.parse(query.query as string), null, store)
+        response = await handler.get(query.collection as string, JSON.parse(query.query as string), null)
     }
     return response
 }

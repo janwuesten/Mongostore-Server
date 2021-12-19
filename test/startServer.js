@@ -13,5 +13,11 @@ server.setRules((store, req, res) => {
     res.allowRead();
     res.allowWrite();
 });
+server.triggers().documentUpdate("test", async (admin, added) => {
+    await added.ref.update({
+        response: false
+    })
+    console.log("Document update")
+})
 
 server.start();
