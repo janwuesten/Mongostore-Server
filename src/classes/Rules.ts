@@ -1,7 +1,7 @@
-import { Db, Document } from 'mongodb'
+import { MongoStoreCollection, MongoStoreDocument } from '../admin/store'
 
 export type MongoStoreRules = {
-    (store: Db, req: MongoStoreRulesRequest, res: MongoStoreRulesResponse): Promise<void>
+    (req: MongoStoreRulesRequest, res: MongoStoreRulesResponse, {admin}): Promise<void>
 }
 export class MongoStoreRulesResponse {
     /** Allow getting a document by ID */
@@ -42,9 +42,29 @@ export class MongoStoreRulesResponse {
     }
 }
 export class MongoStoreRulesRequest {
-    collection: string
-    id: string
-    document: Document
-    update: Document
-    store: Db
+    private _document: MongoStoreDocument
+    private _update: MongoStoreDocument|null
+    constructor(document: MongoStoreDocument, update: MongoStoreDocument|null = null) {
+        this._document = document
+        this._update = update
+    }
+
+    /** Alias for doc.collection */
+    get collection(): MongoStoreCollection {
+        return this._document.collection
+    }
+    /** Alias for doc.id */
+    get id(): string {
+        return this._document.id
+    }
+    /** Alias for collection.collectionID */
+    get collectionID(): string {
+        return this.collection.collectionID
+    }
+    get doc(): MongoStoreDocument {
+        return this._document
+    }
+    get update(): MongoStoreDocument|null {
+        return this._update
+    }
 }

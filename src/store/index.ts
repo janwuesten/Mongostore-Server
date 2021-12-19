@@ -1,4 +1,4 @@
-import { MongoClient, Document, Db, ObjectId } from 'mongodb'
+import { MongoClient, Db, ObjectId } from 'mongodb'
 import * as core from 'express-serve-static-core'
 import decode from './decoder'
 
@@ -71,17 +71,19 @@ export class MongoStoreHandler {
         }
     }
 
-    async add(collection: string, data: Document, auth: null, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+    async add(collectionID: string, data: Record<string, any>, auth: null, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
         data = decode(data)
-        var rulesRequest = new MongoStoreRulesRequest()
-        rulesRequest.document = data
-        rulesRequest.update = data
-        rulesRequest.id = null
-        rulesRequest.collection = collection
+
+        const collection = this._server.admin().store().collection(collectionID)
+        const document = new MongoStoreDocument(collection, data)
+
+        var rulesRequest = new MongoStoreRulesRequest(document)
         var rulesResponse = new MongoStoreRulesResponse()
         if(!bypassRules) {
             try{
-                await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                await (this._server.getRules())(rulesRequest, rulesResponse, {
+                    admin: this._server.admin()
+                })
             }catch(err){
                 if(this._server.getConfig().verbose) {
                     console.error(err)
@@ -92,18 +94,20 @@ export class MongoStoreHandler {
             }
         }
         if(rulesResponse.add || bypassRules) {
-            const result = await this._store.collection(collection).insertOne(data)
+            const result = await this._store.collection(collection.collectionID).insertOne(data)
             data._id = result.insertedId.toHexString()
             response.documents.push(data)
             if(!bypassTriggers) {
-                this._server.triggers().runDocumentAddTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), data))
+                this._server.triggers().runDocumentAddTriggers(document)
             }
         }else{
             response.response = "invalid_permissions"
         }
         return response
     }
-    async delete(collection: string, query: Document|string, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+    async delete(collectionID: string, query: Record<string, any>|string, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+        const collection = this._server.admin().store().collection(collectionID)
+
         var searchForId = typeof query === "string"
         var mongoQuery
         if(searchForId) {
@@ -111,19 +115,19 @@ export class MongoStoreHandler {
                 _id: new ObjectId(query as string)
             }
         }else{
-            mongoQuery = query as Document
+            mongoQuery = query as Record<string, any>
         }
         if(searchForId) {
-            const beforeData = await this._store.collection(collection).findOne(mongoQuery, options)
+            const beforeData = await this._store.collection(collection.collectionID).findOne(mongoQuery, options)
             if(beforeData != null) {
-                var rulesRequest = new MongoStoreRulesRequest()
-                rulesRequest.document = beforeData
-                rulesRequest.id = beforeData._id
-                rulesRequest.collection = collection
+                const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                var rulesRequest = new MongoStoreRulesRequest(beforeDocument)
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            admin: this._server.admin()
+                        })
                     }catch(err){
                         if(this._server.getConfig().verbose) {
                             console.error(err)
@@ -135,27 +139,27 @@ export class MongoStoreHandler {
                 }
                 if(rulesResponse.delete || bypassRules) {
                     response.documents.push(beforeData)
-                    await this._store.collection(collection).deleteOne(mongoQuery)
+                    await this._store.collection(collection.collectionID).deleteOne(mongoQuery)
                     if(!bypassTriggers) {
-                        this._server.triggers().runDocumentDeletedTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData))
+                        this._server.triggers().runDocumentDeletedTriggers(beforeDocument)
                     }
                 }else{
                     response.response = "invalid_permissions"
                 }
             }
         }else{
-            const cursor = await this._store.collection(collection).find(mongoQuery, options)
+            const cursor = await this._store.collection(collection.collectionID).find(mongoQuery, options)
             if ((await cursor.count()) != 0) {
                 while(await cursor.hasNext()) {
                     const beforeData = await cursor.next()
-                    var rulesRequest = new MongoStoreRulesRequest()
-                    rulesRequest.document = beforeData
-                    rulesRequest.id = beforeData._id
-                    rulesRequest.collection = collection
+                    const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                    var rulesRequest = new MongoStoreRulesRequest(beforeDocument)
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                                admin: this._server.admin()
+                            })
                         }catch(err){
                             if(this._server.getConfig().verbose) {
                                 console.error(err)
@@ -167,9 +171,9 @@ export class MongoStoreHandler {
                     }
                     if(rulesResponse.deleteByFind || bypassRules) {
                         response.documents.push(beforeData)
-                        await this._store.collection(collection).deleteOne({_id: new ObjectId(beforeData._id)})
+                        await this._store.collection(collection.collectionID).deleteOne({_id: new ObjectId(beforeData._id)})
                         if(!bypassTriggers) {
-                            this._server.triggers().runDocumentDeletedTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData))
+                            this._server.triggers().runDocumentDeletedTriggers(beforeDocument)
                         }
                     }
                 }
@@ -177,7 +181,9 @@ export class MongoStoreHandler {
         }
         return response
     }
-    async get(collection: string, query: Document|string, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+    async get(collectionID: string, query: Record<string, any>|string, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+        const collection = this._server.admin().store().collection(collectionID)
+        
         var searchForId = typeof query === "string"
         var mongoQuery
         if(searchForId) {
@@ -185,19 +191,19 @@ export class MongoStoreHandler {
                 _id: new ObjectId(query as string)
             }
         }else{
-            mongoQuery = query as Document
+            mongoQuery = query as Record<string, any>
         }
         if(searchForId) {
-            const result = await this._store.collection(collection).findOne(mongoQuery, options)
+            const result = await this._store.collection(collection.collectionID).findOne(mongoQuery, options)
             if(result != null) {
-                var rulesRequest = new MongoStoreRulesRequest()
-                rulesRequest.document = result
-                rulesRequest.id = result._id
-                rulesRequest.collection = collection
-                var rulesResponse = new MongoStoreRulesResponse()
+                const document = new MongoStoreDocument(collection, result)
+                var rulesRequest = new MongoStoreRulesRequest(document)
+                var rulesResponse = new MongoStoreRulesResponse()                
                 if(!bypassRules) {
                     try{
-                        await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            admin: this._server.admin()
+                        })
                     }catch(err){
                         if(this._server.getConfig().verbose) {
                             console.error(err)
@@ -210,25 +216,25 @@ export class MongoStoreHandler {
                 if(rulesResponse.get || bypassRules) {
                     response.documents.push(result)
                     if(!bypassTriggers) {
-                        this._server.triggers().runDocumentGetTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), result))
+                        this._server.triggers().runDocumentGetTriggers(document)
                     }
                 }else{
                     response.response = "invalid_permissions"
                 }
             }
         }else{
-            const cursor = await this._store.collection(collection).find(mongoQuery, options)
+            const cursor = await this._store.collection(collection.collectionID).find(mongoQuery, options)
             if ((await cursor.count()) != 0) {
                 while(await cursor.hasNext()) {
                     const item = await cursor.next()
-                    var rulesRequest = new MongoStoreRulesRequest()
-                    rulesRequest.document = item
-                    rulesRequest.id = item._id
-                    rulesRequest.collection = collection
-                    var rulesResponse = new MongoStoreRulesResponse()           
+                    const document = new MongoStoreDocument(collection, item)
+                    var rulesRequest = new MongoStoreRulesRequest(document)
+                    var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            rulesResponse = new MongoStoreRulesResponse()    
+                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                                admin: this._server.admin()
+                            })
                         }catch(err){
                             if(this._server.getConfig().verbose) {
                                 console.error(err)
@@ -238,11 +244,10 @@ export class MongoStoreHandler {
                             rulesResponse = new MongoStoreRulesResponse()
                         }
                     }
-                    await this._server.getRules()(this._store, rulesRequest, rulesResponse)   
                     if(rulesResponse.find || bypassRules) {
                         response.documents.push(item)
                         if(!bypassTriggers) {
-                            this._server.triggers().runDocumentGetTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), item))
+                            this._server.triggers().runDocumentGetTriggers(document)
                         }
                     }
                 }
@@ -250,8 +255,11 @@ export class MongoStoreHandler {
         }
         return response
     }
-    async set(collection: string, query: Document|string, afterData: Document, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+    async set(collectionID: string, query: Record<string, any>|string, afterData: Record<string, any>, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
         afterData = decode(afterData)
+
+        const collection = this._server.admin().store().collection(collectionID)
+
         var searchForId = typeof query === "string"
         var mongoQuery
         if(searchForId) {
@@ -259,21 +267,21 @@ export class MongoStoreHandler {
                 _id: new ObjectId(query as string)
             }
         }else{
-            mongoQuery = query as Document
+            mongoQuery = query as Record<string, any>
         }
         if(searchForId) {
-            const beforeData = await this._store.collection(collection).findOne(mongoQuery, options)
+            const beforeData = await this._store.collection(collection.collectionID).findOne(mongoQuery, options)
             if(beforeData != null) {
                 afterData._id = new ObjectId(beforeData._id)
-                var rulesRequest = new MongoStoreRulesRequest()
-                rulesRequest.document = beforeData
-                rulesRequest.update = afterData
-                rulesRequest.id = beforeData._id
-                rulesRequest.collection = collection
+                const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                const afterDocument = new MongoStoreDocument(collection, afterData)
+                var rulesRequest = new MongoStoreRulesRequest(beforeDocument, afterDocument)
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            admin: this._server.admin()
+                        })
                     }catch(err){
                         if(this._server.getConfig().verbose) {
                             console.error(err)
@@ -285,10 +293,10 @@ export class MongoStoreHandler {
                 }
                 if(rulesResponse.set || bypassRules) {
                     response.documents.push(afterData)
-                    await this._store.collection(collection).replaceOne(mongoQuery, afterData)
+                    await this._store.collection(collection.collectionID).replaceOne(mongoQuery, afterData)
                     if(!bypassTriggers) {
                         if(this.dataUpdated(beforeData, afterData)) {
-                            this._server.triggers().runDocumentUpdateTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData), new MongoStoreDocument(this._server.admin().store().collection(collection), afterData))
+                            this._server.triggers().runDocumentUpdateTriggers(beforeDocument, afterDocument)
                         }
                     }
                 }else{
@@ -297,20 +305,20 @@ export class MongoStoreHandler {
                 }
             }
         }else{
-            const cursor = await this._store.collection(collection).find(mongoQuery, options)
+            const cursor = await this._store.collection(collection.collectionID).find(mongoQuery, options)
             if ((await cursor.count()) != 0) {
                 while(await cursor.hasNext()) {
                     const beforeData = await cursor.next()
                     afterData._id = new ObjectId(beforeData._id)
-                    var rulesRequest = new MongoStoreRulesRequest()
-                    rulesRequest.document = beforeData
-                    rulesRequest.update = afterData
-                    rulesRequest.id = beforeData._id
-                    rulesRequest.collection = collection
+                    const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                    const afterDocument = new MongoStoreDocument(collection, afterData)
+                    var rulesRequest = new MongoStoreRulesRequest(beforeDocument, afterDocument)
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                                admin: this._server.admin()
+                            })
                         }catch(err){
                             if(this._server.getConfig().verbose) {
                                 console.error(err)
@@ -322,10 +330,10 @@ export class MongoStoreHandler {
                     }
                     if(rulesResponse.setByFind || bypassRules) {
                         response.documents.push(afterData)
-                        await this._store.collection(collection).replaceOne({_id: new ObjectId(beforeData._id)}, afterData)
+                        await this._store.collection(collection.collectionID).replaceOne({_id: new ObjectId(beforeData._id)}, afterData)
                         if(!bypassTriggers) {
                             if(this.dataUpdated(beforeData, afterData)) {
-                                this._server.triggers().runDocumentUpdateTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData), new MongoStoreDocument(this._server.admin().store().collection(collection), afterData))
+                                this._server.triggers().runDocumentUpdateTriggers(beforeDocument, afterDocument)
                             }
                         }
                     }
@@ -334,8 +342,11 @@ export class MongoStoreHandler {
         }
         return response
     }
-    async update(collection: string, query: Document|string, afterData: Document, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
+    async update(collectionID: string, query: Record<string, any>|string, afterData: Record<string, any>, auth: null, options: {[key: string]: any} = {}, bypassRules: boolean = false, bypassTriggers: boolean = false, response: MongoStoreResponse = new MongoStoreResponse()): Promise<MongoStoreResponse> {
         afterData = decode(afterData)
+
+        const collection = this._server.admin().store().collection(collectionID)
+
         var searchForId = typeof query === "string"
         var mongoQuery
         if(searchForId) {
@@ -343,21 +354,21 @@ export class MongoStoreHandler {
                 _id: new ObjectId(query as string)
             }
         }else{
-            mongoQuery = query as Document
+            mongoQuery = query as Record<string, any>
         }
         if(searchForId) {
-            const beforeData = await this._store.collection(collection).findOne(mongoQuery, options)
+            const beforeData = await this._store.collection(collection.collectionID).findOne(mongoQuery, options)
             if(beforeData != null) {
                 afterData._id = new ObjectId(beforeData._id)
-                var rulesRequest = new MongoStoreRulesRequest()
-                rulesRequest.document = beforeData
-                rulesRequest.update = afterData
-                rulesRequest.id = beforeData._id
-                rulesRequest.collection = collection
+                const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                const afterDocument = new MongoStoreDocument(collection, afterData)
+                var rulesRequest = new MongoStoreRulesRequest(beforeDocument, afterDocument)
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            admin: this._server.admin()
+                        })
                     }catch(err){
                         if(this._server.getConfig().verbose) {
                             console.error(err)
@@ -369,12 +380,12 @@ export class MongoStoreHandler {
                 }
                 if(rulesResponse.update || bypassRules) {
                     response.documents.push(afterData)
-                    await this._store.collection(collection).updateOne(mongoQuery, {
+                    await this._store.collection(collection.collectionID).updateOne(mongoQuery, {
                         $set: afterData
                     })
                     if(!bypassTriggers) {
                         if(this.dataUpdated(beforeData, afterData)) {
-                            this._server.triggers().runDocumentUpdateTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData), new MongoStoreDocument(this._server.admin().store().collection(collection), afterData))
+                            this._server.triggers().runDocumentUpdateTriggers(beforeDocument, afterDocument)
                         }
                     }
                 }else{
@@ -383,20 +394,20 @@ export class MongoStoreHandler {
                 }
             }
         }else{
-            const cursor = await this._store.collection(collection).find(mongoQuery, options)
+            const cursor = await this._store.collection(collection.collectionID).find(mongoQuery, options)
             if ((await cursor.count()) != 0) {
                 while(await cursor.hasNext()) {
                     const beforeData = await cursor.next()
                     afterData._id = new ObjectId(beforeData._id)
-                    var rulesRequest = new MongoStoreRulesRequest()
-                    rulesRequest.document = beforeData
-                    rulesRequest.update = afterData
-                    rulesRequest.id = beforeData._id
-                    rulesRequest.collection = collection
+                    const beforeDocument = new MongoStoreDocument(collection, beforeData)
+                    const afterDocument = new MongoStoreDocument(collection, afterData)
+                    var rulesRequest = new MongoStoreRulesRequest(beforeDocument, afterDocument)
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await this._server.getRules()(this._store, rulesRequest, rulesResponse)
+                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                                admin: this._server.admin()
+                            })
                         }catch(err){
                             if(this._server.getConfig().verbose) {
                                 console.error(err)
@@ -408,12 +419,12 @@ export class MongoStoreHandler {
                     }
                     if(rulesResponse.updateByFind || bypassRules) {
                         response.documents.push(afterData)
-                        await this._store.collection(collection).updateOne({_id: new ObjectId(beforeData._id)}, {
+                        await this._store.collection(collection.collectionID).updateOne({_id: new ObjectId(beforeData._id)}, {
                             $set: afterData
                         })
                         if(!bypassTriggers) {
                             if(this.dataUpdated(beforeData, afterData)) {
-                                this._server.triggers().runDocumentUpdateTriggers(new MongoStoreDocument(this._server.admin().store().collection(collection), beforeData), new MongoStoreDocument(this._server.admin().store().collection(collection), afterData))
+                                this._server.triggers().runDocumentUpdateTriggers(beforeDocument, afterDocument)
                             }
                         }
                     }
@@ -456,7 +467,7 @@ export class MongoStoreHandler {
 }
 export class MongoStoreResponse {
     response: string
-    documents: Document[]
+    documents: Record<string, any>[]
     constructor() {
         this.response = "ok"
         this.documents = []

@@ -36,19 +36,19 @@ export class MongoStoreDocumentResponse {
         this._collection = collection
     }
 
-    success(): boolean {
+    get success(): boolean {
         return this._response.response === "ok"
     }
-    docs(): MongoStoreDocument[] {
+    get docs(): MongoStoreDocument[] {
         let docs: MongoStoreDocument[] = []
         for(let doc of this._response.documents) {
             docs.push(new MongoStoreDocument(this._collection, doc))
         }
         return docs
     }
-    doc(): MongoStoreDocument {
-        if(this.docs().length >= 1) {
-            return this.docs()[0]
+    get doc(): MongoStoreDocument {
+        if(this.docs.length >= 1) {
+            return this.docs[0]
         }
     }
 }

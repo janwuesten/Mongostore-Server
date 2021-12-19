@@ -9,15 +9,18 @@ server.setConfig({
         url: "mongodb://localhost:27017/"
     }
 });
-server.setRules((store, req, res) => {
-    res.allowRead();
-    res.allowWrite();
+server.setRules(async (req, res, {admin}) => {
+    let settings = await admin.store().collection("settings").where("settings_id", "==", "allowReadAndWrite").get()
+    if(settings.success && settings.doc.data().value === true) {
+        res.allowRead()
+        res.allowWrite()
+    }
 });
-server.triggers().documentUpdate("test", async (admin, added) => {
+server.triggers().documentUpdate("test", async (added) => {
     await added.ref.update({
         response: false
     })
+    await added.ref.get()
     console.log("Document update")
 })
-
 server.start();
