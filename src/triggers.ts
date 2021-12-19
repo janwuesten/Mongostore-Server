@@ -1,15 +1,15 @@
-import { Db, Document } from "mongodb";
+import { Db, Document } from "mongodb"
 
 export class MongoStoreTriggers {
-    private documentGetTriggers: MongoStoreGetTrigger[];
-    private documentAddTriggers: MongoStoreAddedTrigger[];
-    private documentUpdateTriggers: MongoStoreUpdatedTrigger[];
-    private documentDeleteTriggers: MongoStoreDeletedTrigger[];
+    private documentGetTriggers: MongoStoreGetTrigger[]
+    private documentAddTriggers: MongoStoreAddedTrigger[]
+    private documentUpdateTriggers: MongoStoreUpdatedTrigger[]
+    private documentDeleteTriggers: MongoStoreDeletedTrigger[]
     constructor() {
-        this.documentGetTriggers = [];
-        this.documentAddTriggers = [];
-        this.documentUpdateTriggers = [];
-        this.documentDeleteTriggers = [];
+        this.documentGetTriggers = []
+        this.documentAddTriggers = []
+        this.documentUpdateTriggers = []
+        this.documentDeleteTriggers = []
     }
     documentGet(collection: string, trigger: (store: Db, document: Document) => void) {
         this.documentGetTriggers.push(new MongoStoreGetTrigger(collection, trigger))
@@ -28,7 +28,7 @@ export class MongoStoreTriggers {
     runDocumentGetTrigers(collection: string, store: Db, document: Document) {
         for(var index in this.documentGetTriggers) {
             if(this.documentGetTriggers[index].collection == collection) {
-                this.documentGetTriggers[index].trigger(store, document);
+                this.documentGetTriggers[index].trigger(store, document)
             }
         }
     }
@@ -36,7 +36,7 @@ export class MongoStoreTriggers {
     runDocumentAddTrigers(collection: string, store: Db, added: Document) {
         for(var index in this.documentAddTriggers) {
             if(this.documentAddTriggers[index].collection == collection) {
-                this.documentAddTriggers[index].trigger(store, added);
+                this.documentAddTriggers[index].trigger(store, added)
             }
         }
     }
@@ -44,7 +44,7 @@ export class MongoStoreTriggers {
     runDocumentUpdateTriggers(collection: string, store: Db, before: Document, after: Document) {
         for(var index in this.documentUpdateTriggers) {
             if(this.documentUpdateTriggers[index].collection == collection) {
-                this.documentUpdateTriggers[index].trigger(store, before, after);
+                this.documentUpdateTriggers[index].trigger(store, before, after)
             }
         }
     }
@@ -52,41 +52,41 @@ export class MongoStoreTriggers {
     runDocumentDeletedTriggers(collection: string, store: Db, deleted: Document) {
         for(var index in this.documentDeleteTriggers) {
             if(this.documentDeleteTriggers[index].collection == collection) {
-                this.documentDeleteTriggers[index].trigger(store, deleted);
+                this.documentDeleteTriggers[index].trigger(store, deleted)
             }
         }
     }
 }
 class MongoStoreGetTrigger {
-    collection: string;
-    trigger: (store: Db, document: Document) => void;
+    collection: string
+    trigger: (store: Db, document: Document) => void
     constructor(collection: string, trigger: (store: Db, document: Document) => void) {
-        this.collection = collection;
-        this.trigger = trigger;
+        this.collection = collection
+        this.trigger = trigger
     }
 }
 class MongoStoreDeletedTrigger {
-    collection: string;
-    trigger: (store: Db, deleted: Document) => void;
+    collection: string
+    trigger: (store: Db, deleted: Document) => void
     constructor(collection: string, trigger: (store: Db, deleted: Document) => void) {
-        this.collection = collection;
-        this.trigger = trigger;
+        this.collection = collection
+        this.trigger = trigger
     }
 }
 class MongoStoreUpdatedTrigger {
-    collection: string;
-    trigger: (store: Db, before: Document, after: Document) => void;
+    collection: string
+    trigger: (store: Db, before: Document, after: Document) => void
     constructor(collection: string, trigger: (store: Db, before: Document, after: Document) => void) {
-        this.collection = collection;
-        this.trigger = trigger;
+        this.collection = collection
+        this.trigger = trigger
     }
 }
 
 class MongoStoreAddedTrigger {
-    collection: string;
-    trigger: (store: Db, added: Document) => void;
+    collection: string
+    trigger: (store: Db, added: Document) => void
     constructor(collection: string, trigger: (store: Db, added: Document) => void) {
-        this.collection = collection;
-        this.trigger = trigger;
+        this.collection = collection
+        this.trigger = trigger
     }
 }
