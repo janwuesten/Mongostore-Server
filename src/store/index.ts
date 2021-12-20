@@ -62,11 +62,8 @@ export class MongoStoreHandler {
                 res.json({response: "invalid_request"})
             }
         }catch(err) {
-            if(this._server.getConfig().verbose) {
-                console.error(err)
-            }else{
-                console.log("MONGOSTORE: Crashed /store. Use verbose mode for detailed information")
-            }
+            console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+            console.error(err)
             res.json({response: "crash"})
         }
     }
@@ -85,11 +82,8 @@ export class MongoStoreHandler {
                     admin: this._server.admin()
                 })
             }catch(err){
-                if(this._server.getConfig().verbose) {
-                    console.error(err)
-                }else{
-                    console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                }
+                console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                console.error(err)
                 rulesResponse = new MongoStoreRulesResponse()
             }
         }
@@ -129,11 +123,8 @@ export class MongoStoreHandler {
                             admin: this._server.admin()
                         })
                     }catch(err){
-                        if(this._server.getConfig().verbose) {
-                            console.error(err)
-                        }else{
-                            console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                        }
+                        console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                        console.error(err)
                         rulesResponse = new MongoStoreRulesResponse()
                     }
                 }
@@ -161,11 +152,8 @@ export class MongoStoreHandler {
                                 admin: this._server.admin()
                             })
                         }catch(err){
-                            if(this._server.getConfig().verbose) {
-                                console.error(err)
-                            }else{
-                                console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                            }
+                            console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                            console.error(err)
                             rulesResponse = new MongoStoreRulesResponse()
                         }
                     }
@@ -205,11 +193,8 @@ export class MongoStoreHandler {
                             admin: this._server.admin()
                         })
                     }catch(err){
-                        if(this._server.getConfig().verbose) {
-                            console.error(err)
-                        }else{
-                            console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                        }
+                        console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                        console.error(err)
                         rulesResponse = new MongoStoreRulesResponse()
                     }
                 }
@@ -236,11 +221,8 @@ export class MongoStoreHandler {
                                 admin: this._server.admin()
                             })
                         }catch(err){
-                            if(this._server.getConfig().verbose) {
-                                console.error(err)
-                            }else{
-                                console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                            }
+                            console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                            console.error(err)
                             rulesResponse = new MongoStoreRulesResponse()
                         }
                     }
@@ -283,11 +265,8 @@ export class MongoStoreHandler {
                             admin: this._server.admin()
                         })
                     }catch(err){
-                        if(this._server.getConfig().verbose) {
-                            console.error(err)
-                        }else{
-                            console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                        }
+                        console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                        console.error(err)
                         rulesResponse = new MongoStoreRulesResponse()
                     }
                 }
@@ -320,11 +299,8 @@ export class MongoStoreHandler {
                                 admin: this._server.admin()
                             })
                         }catch(err){
-                            if(this._server.getConfig().verbose) {
-                                console.error(err)
-                            }else{
-                                console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                            }
+                            console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                            console.error(err)
                             rulesResponse = new MongoStoreRulesResponse()
                         }
                     }
@@ -370,11 +346,8 @@ export class MongoStoreHandler {
                             admin: this._server.admin()
                         })
                     }catch(err){
-                        if(this._server.getConfig().verbose) {
-                            console.error(err)
-                        }else{
-                            console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                        }
+                        console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                        console.error(err)
                         rulesResponse = new MongoStoreRulesResponse()
                     }
                 }
@@ -409,11 +382,8 @@ export class MongoStoreHandler {
                                 admin: this._server.admin()
                             })
                         }catch(err){
-                            if(this._server.getConfig().verbose) {
-                                console.error(err)
-                            }else{
-                                console.log("MONGOSTORE: Crashed /store ruleset. Use verbose mode for detailed information")
-                            }
+                            console.log("MONGOSTORE: Crashed /store ruleset. Store request was denied.")
+                            console.error(err)
                             rulesResponse = new MongoStoreRulesResponse()
                         }
                     }

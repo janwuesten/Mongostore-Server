@@ -50,9 +50,14 @@ export class MongoStoreTriggers {
                 if(verbose) {
                     console.log(`MONGOSTORE: Triggered documentGet trigger for collection ${document.collection.collectionID}`)
                 }
-                this._documentGetTriggers[index].trigger(document, {
-                    admin: this._server.admin()
-                })
+                try{
+                    this._documentGetTriggers[index].trigger(document, {
+                        admin: this._server.admin()
+                    })
+                }catch(err) {
+                    console.log(`MONGOSTORE: Crashed trigger for collection ${document.collection.collectionID}`)
+                    console.error(err);
+                }
             }
         }
     }
@@ -64,9 +69,14 @@ export class MongoStoreTriggers {
                 if(verbose) {
                     console.log(`MONGOSTORE: Triggered documentAdd trigger for collection ${added.collection.collectionID}`)
                 }
-                this._documentAddTriggers[index].trigger(added, {
-                    admin: this._server.admin()
-                })
+                try{
+                    this._documentAddTriggers[index].trigger(added, {
+                        admin: this._server.admin()
+                    })
+                }catch(err) {
+                    console.log(`MONGOSTORE: Crashed trigger for collection ${added.collection.collectionID}`)
+                    console.error(err);
+                }
             }
         }
     }
@@ -78,9 +88,14 @@ export class MongoStoreTriggers {
                 if(verbose) {
                     console.log(`MONGOSTORE: Triggered documentUpdate trigger for collection ${before.collection.collectionID}`)
                 }
-                this._documentUpdateTriggers[index].trigger(before, after, {
-                    admin: this._server.admin()
-                })
+                try{
+                    this._documentUpdateTriggers[index].trigger(before, after, {
+                        admin: this._server.admin()
+                    })
+                }catch(err) {
+                    console.log(`MONGOSTORE: Crashed trigger for collection ${before.collection.collectionID}`)
+                    console.error(err);
+                }
             }
         }
     }
@@ -92,9 +107,14 @@ export class MongoStoreTriggers {
                 if(verbose) {
                     console.log(`MONGOSTORE: Triggered documentDelete trigger for collection ${deleted.collection.collectionID}`)
                 }
-                this._documentDeleteTriggers[index].trigger(deleted, {
-                    admin: this._server.admin()
-                })
+                try{
+                    this._documentDeleteTriggers[index].trigger(deleted, {
+                        admin: this._server.admin()
+                    })
+                }catch(err) {
+                    console.log(`MONGOSTORE: Crashed trigger for collection ${deleted.collection.collectionID}`)
+                    console.error(err);
+                }
             }
         }
     }
