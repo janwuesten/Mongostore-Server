@@ -23,4 +23,7 @@ server.triggers().documentUpdate("test", async (added) => {
     await added.ref.get()
     console.log("Document update")
 })
+server.functions().http("test", (req, res, {admin}) => {
+    res.json({"test": true})
+})
 server.start();

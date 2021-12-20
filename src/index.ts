@@ -5,6 +5,7 @@ import { MongoStoreTriggers } from './triggers'
 import { MongoStoreConfig } from './classes/Configuration'
 import { MongoStoreRules } from './classes/Rules'
 import { MongoStoreAdmin } from './admin'
+import { MongoStoreFunctions } from './functions'
 
 export class MongoStoreServer {
     private _server: Express
@@ -13,6 +14,7 @@ export class MongoStoreServer {
     private _handler: MongoStoreHandler
     private _triggerHandler: MongoStoreTriggers
     private _admin: MongoStoreAdmin
+    private _functions: MongoStoreFunctions
 
     constructor() {
         this._rules = async (store, req, res): Promise<void> => {}
@@ -21,6 +23,7 @@ export class MongoStoreServer {
         this._handler = new MongoStoreHandler(this)
         this._triggerHandler = new MongoStoreTriggers(this)
         this._admin = new MongoStoreAdmin(this)
+        this._functions = new MongoStoreFunctions(this)
         
         this._server.use(express.json())
         this._server.use(express.urlencoded({ extended: true }))
@@ -70,6 +73,9 @@ export class MongoStoreServer {
     //#region APIs
     admin(): MongoStoreAdmin {
         return this._admin
+    }
+    functions(): MongoStoreFunctions {
+        return this._functions
     }
     triggers(): MongoStoreTriggers {
         return this._triggerHandler
