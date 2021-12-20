@@ -1,6 +1,8 @@
 import { MongoStoreServer } from "."
-import { MongoStoreAdmin } from "./admin"
 import { MongoStoreDocument } from "./admin/store"
+
+export type MongoStoreTriggerDocumentTrigger = (document: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
+export type MongoStoreTriggerDocumentUpdateTrigger = (before: MongoStoreDocument, after: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
 
 export class MongoStoreTriggers {
     private _server: MongoStoreServer
@@ -15,25 +17,25 @@ export class MongoStoreTriggers {
         this._documentUpdateTriggers = []
         this._documentDeleteTriggers = []
     }
-    documentGet(collection: string, trigger: (document: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    documentGet(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         this._documentGetTriggers.push(new MongoStoreGetTrigger(collection, trigger))
         if(this._server.getConfig().verbose) {
             console.log(`MONGOSTORE: Registerd documentGet trigger for collection ${collection}`)
         }
     }
-    documentAdd(collection: string, trigger: (added: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    documentAdd(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         this._documentAddTriggers.push(new MongoStoreAddedTrigger(collection, trigger))
         if(this._server.getConfig().verbose) {
             console.log(`MONGOSTORE: Registerd documentAdd trigger for collection ${collection}`)
         }
     }
-    documentUpdate(collection: string, trigger: (before: MongoStoreDocument, after: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    documentUpdate(collection: string, trigger: MongoStoreTriggerDocumentUpdateTrigger) {
         this._documentUpdateTriggers.push(new MongoStoreUpdatedTrigger(collection, trigger))
         if(this._server.getConfig().verbose) {
             console.log(`MONGOSTORE: Registerd documentUpdate trigger for collection ${collection}`)
         }
     }
-    documentDelete(collection: string, trigger: (deleted: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    documentDelete(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         this._documentDeleteTriggers.push(new MongoStoreDeletedTrigger(collection, trigger))
         if(this._server.getConfig().verbose) {
             console.log(`MONGOSTORE: Registerd documentDelete trigger for collection ${collection}`)
@@ -104,30 +106,30 @@ class MongoStoreDocumentTrigger {
     }
 }
 class MongoStoreGetTrigger extends MongoStoreDocumentTrigger {
-    trigger: (document: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
-    constructor(collection: string, trigger: (document: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    trigger: MongoStoreTriggerDocumentTrigger
+    constructor(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         super(collection)
         this.trigger = trigger
     }
 }
 class MongoStoreDeletedTrigger extends MongoStoreDocumentTrigger {
-    trigger: (deleted: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
-    constructor(collection: string, trigger: (deleted: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    trigger: MongoStoreTriggerDocumentTrigger
+    constructor(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         super(collection)
         this.trigger = trigger
     }
 }
 class MongoStoreUpdatedTrigger extends MongoStoreDocumentTrigger {
-    trigger: (before: MongoStoreDocument, after: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
-    constructor(collection: string, trigger: (before: MongoStoreDocument, after: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    trigger: MongoStoreTriggerDocumentUpdateTrigger
+    constructor(collection: string, trigger: MongoStoreTriggerDocumentUpdateTrigger) {
         super(collection)
         this.trigger = trigger
     }
 }
 
 class MongoStoreAddedTrigger extends MongoStoreDocumentTrigger {
-    trigger: (added: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
-    constructor(collection: string, trigger: (added: MongoStoreDocument, { admin: MongoStoreAdmin }) => void) {
+    trigger: MongoStoreTriggerDocumentTrigger
+    constructor(collection: string, trigger: MongoStoreTriggerDocumentTrigger) {
         super(collection)
         this.trigger = trigger
     }
