@@ -7,10 +7,24 @@ import actionAdd from './actions/add'
 import actionSet from './actions/set'
 import actionUpdate from './actions/update'
 import actionDelete from './actions/delete'
-import { MongoStoreRulesRequest, MongoStoreRulesResponse } from '../classes/Rules'
+import { MongoStoreRules, MongoStoreRulesRequest, MongoStoreRulesResponse } from './classes/Rules'
 import { MongoStoreServer } from '..'
 import { MongoStoreDocument } from '../admin/store'
 
+export class MongoStore {
+    private _server: MongoStoreServer
+    private _rules: MongoStoreRules
+    constructor(server: MongoStoreServer) {
+        this._server = server
+    }
+
+    setRules(rules: MongoStoreRules): void {
+        this._rules = rules
+    }
+    getRules(): MongoStoreRules {
+        return this._rules
+    }
+}
 export class MongoStoreHandler {
     private _server: MongoStoreServer
     private _client: MongoClient
@@ -78,7 +92,7 @@ export class MongoStoreHandler {
         var rulesResponse = new MongoStoreRulesResponse()
         if(!bypassRules) {
             try{
-                await (this._server.getRules())(rulesRequest, rulesResponse, {
+                await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                     admin: this._server.admin()
                 })
             }catch(err){
@@ -119,7 +133,7 @@ export class MongoStoreHandler {
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                        await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                             admin: this._server.admin()
                         })
                     }catch(err){
@@ -148,7 +162,7 @@ export class MongoStoreHandler {
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                                 admin: this._server.admin()
                             })
                         }catch(err){
@@ -189,7 +203,7 @@ export class MongoStoreHandler {
                 var rulesResponse = new MongoStoreRulesResponse()                
                 if(!bypassRules) {
                     try{
-                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                        await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                             admin: this._server.admin()
                         })
                     }catch(err){
@@ -217,7 +231,7 @@ export class MongoStoreHandler {
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                                 admin: this._server.admin()
                             })
                         }catch(err){
@@ -261,7 +275,7 @@ export class MongoStoreHandler {
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                        await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                             admin: this._server.admin()
                         })
                     }catch(err){
@@ -295,7 +309,7 @@ export class MongoStoreHandler {
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                                 admin: this._server.admin()
                             })
                         }catch(err){
@@ -342,7 +356,7 @@ export class MongoStoreHandler {
                 var rulesResponse = new MongoStoreRulesResponse()
                 if(!bypassRules) {
                     try{
-                        await (this._server.getRules())(rulesRequest, rulesResponse, {
+                        await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                             admin: this._server.admin()
                         })
                     }catch(err){
@@ -378,7 +392,7 @@ export class MongoStoreHandler {
                     var rulesResponse = new MongoStoreRulesResponse()
                     if(!bypassRules) {
                         try{
-                            await (this._server.getRules())(rulesRequest, rulesResponse, {
+                            await (this._server.store().getRules())(rulesRequest, rulesResponse, {
                                 admin: this._server.admin()
                             })
                         }catch(err){

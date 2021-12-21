@@ -1,27 +1,26 @@
 import express, {Express} from 'express'
 import cors from 'cors'
-import {MongoStoreHandler} from './store'
+import {MongoStoreHandler, MongoStore} from './store'
 import { MongoStoreTriggers } from './triggers'
 import { MongoStoreConfig } from './classes/Configuration'
-import { MongoStoreRules } from './classes/Rules'
 import { MongoStoreAdmin } from './admin'
 import { MongoStoreFunctions } from './functions'
 
 export class MongoStoreServer {
     private _server: Express
     private _config: MongoStoreConfig
-    private _rules: MongoStoreRules
+    private _store: MongoStore
     private _handler: MongoStoreHandler
-    private _triggerHandler: MongoStoreTriggers
+    private _triggers: MongoStoreTriggers
     private _admin: MongoStoreAdmin
     private _functions: MongoStoreFunctions
 
     constructor() {
-        this._rules = async (store, req, res): Promise<void> => {}
         this._config = new MongoStoreConfig()
         this._server = express()
+        this._store = new MongoStore(this)
         this._handler = new MongoStoreHandler(this)
-        this._triggerHandler = new MongoStoreTriggers(this)
+        this._triggers = new MongoStoreTriggers(this)
         this._admin = new MongoStoreAdmin(this)
         this._functions = new MongoStoreFunctions(this)
         
@@ -53,16 +52,10 @@ export class MongoStoreServer {
         this._server.listen(this._config.port)
         console.log("MONGOSTORE: Server started on port " + this._config.port)
     }
-    setRules(rules: MongoStoreRules): void {
-        this._rules = rules
-    }
     setConfig(config: MongoStoreConfig): void {
         this._config = config
     }
 
-    getRules(): MongoStoreRules {
-        return this._rules
-    }
     getConfig(): MongoStoreConfig {
         return this._config
     }
@@ -71,6 +64,9 @@ export class MongoStoreServer {
     }
 
     //#region APIs
+    store(): MongoStore {
+        return this._store
+    }
     admin(): MongoStoreAdmin {
         return this._admin
     }
@@ -78,7 +74,7 @@ export class MongoStoreServer {
         return this._functions
     }
     triggers(): MongoStoreTriggers {
-        return this._triggerHandler
+        return this._triggers
     }
     express(): Express | null {
         if(this._server) {

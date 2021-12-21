@@ -1,4 +1,4 @@
-import { MongoStoreCollection, MongoStoreDocument } from '../admin/store'
+import { MongoStoreCollection, MongoStoreDocument } from '../../admin/store'
 
 export type MongoStoreRules = {
     (req: MongoStoreRulesRequest, res: MongoStoreRulesResponse, {admin}): Promise<void>
