@@ -22,6 +22,9 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
+
+      - name: Build typescript
+        run: num run build
         
       - name: Publish Node.js package
         run: npm publish
