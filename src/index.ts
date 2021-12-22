@@ -1,4 +1,4 @@
-import express, {Express} from 'express'
+import express, {Express, RequestHandler} from 'express'
 import cors from 'cors'
 import {MongoStoreHandler, MongoStore} from './store'
 import { MongoStoreTriggers } from './triggers'
@@ -24,8 +24,8 @@ export class MongoStoreServer {
         this._admin = new MongoStoreAdmin(this)
         this._functions = new MongoStoreFunctions(this)
         
-        this._server.use(express.json())
-        this._server.use(express.urlencoded({ extended: true }))
+        this._server.use(express.json() as RequestHandler)
+        this._server.use(express.urlencoded({ extended: true }) as RequestHandler)
         this._server.use(cors())
         
         /*const staticPath = path.join(__dirname, '..', '..', 'hosting')
