@@ -9,7 +9,7 @@ server.setConfig({
         url: "mongodb://localhost:27017/"
     }
 });
-server.setRules(async (req, res, {admin}) => {
+server.store().setRules(async (req, res, {admin}) => {
     let settings = await admin.store().collection("settings").where("settings_id", "==", "allowReadAndWrite").get()
     if(settings.success && settings.doc.data().value === true) {
         res.allowRead()

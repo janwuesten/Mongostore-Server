@@ -50,6 +50,11 @@ export class MongoStoreDocumentResponse {
         if(this.docs.length >= 1) {
             return this.docs[0]
         }
+        return null
+    }
+
+    exists(): boolean {
+        return this.docs.length >= 1
     }
 }
 export class MongoStoreQuery {
