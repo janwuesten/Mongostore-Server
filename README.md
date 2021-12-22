@@ -1,7 +1,5 @@
 # Mongostore-Server
 
-> Mongostore-Server is currently in development, npm install mongostore-server will not work. You can install a preview of the package but it is not recommended to do so.
-
 # Introduction
 Mongostore server is a Node.js server for "serverless" communication between a Client (e.g. a Website) and a MongoDB.
 While it isn't real serverless, because you will need to run the Mongostore-Server, it features some aspects of a serverless environment like accessing your MongoDB without writing APIs for each request type.
