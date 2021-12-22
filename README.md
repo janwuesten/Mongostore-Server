@@ -30,8 +30,8 @@ npm install -D typescript
 mkdir src
 tsc --init
 
-REM Install mongostore-server
-npm install mongostore-server
+REM Install @janwuesten/mongostore-server
+npm install @janwuesten/mongostore-server
 ```
 
 Edit the tsconfig.json and enter the following configuration:
@@ -71,7 +71,7 @@ Edit your package.json and add the following information:
 Create a index.ts in the src/ directory with the following content:
 
 ```ts
-import { MongoStoreServer } from "mongostore-server"
+import { MongoStoreServer } from "@janwuesten/mongostore-server"
 
 const server = new MongoStoreServer()
 server.setConfig({
