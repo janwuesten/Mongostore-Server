@@ -5,6 +5,7 @@ import { MongoStoreTriggers } from './triggers'
 import { MongoStoreConfig } from './classes/Configuration'
 import { MongoStoreAdmin } from './admin'
 import { MongoStoreFunctions } from './functions'
+import { MongoStoreHosting } from './hosting'
 
 export class MongoStoreServer {
     private _server: Express
@@ -14,6 +15,7 @@ export class MongoStoreServer {
     private _triggers: MongoStoreTriggers
     private _admin: MongoStoreAdmin
     private _functions: MongoStoreFunctions
+    private _hosting: MongoStoreHosting
 
     constructor() {
         this._config = new MongoStoreConfig()
@@ -23,20 +25,12 @@ export class MongoStoreServer {
         this._triggers = new MongoStoreTriggers(this)
         this._admin = new MongoStoreAdmin(this)
         this._functions = new MongoStoreFunctions(this)
+        this._hosting = new MongoStoreHosting(this)
         
         this._server.use(express.json() as RequestHandler)
         this._server.use(express.urlencoded({ extended: true }) as RequestHandler)
         this._server.use(cors())
         
-        /*const staticPath = path.join(__dirname, '..', '..', 'hosting')
-        this.server.use(express.static(staticPath))
-        this.server.get('/',  (req,res): void => {
-            res.sendFile(path.join(staticPath, "index.html"))
-        })
-        this.server.get('*', (req, res): void =>{
-            res.sendFile(path.join(staticPath, "index.html"))
-        })*/
-
         // Mongostore APIs
         this._server.post("/mongostore/store", async (req, res) => {
             await this._handler.handler(req, res)
@@ -75,6 +69,9 @@ export class MongoStoreServer {
     }
     triggers(): MongoStoreTriggers {
         return this._triggers
+    }
+    hosting(): MongoStoreHosting {
+        return this._hosting
     }
     express(): Express | null {
         if(this._server) {
