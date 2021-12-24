@@ -1,6 +1,6 @@
 {
   "name": "@janwuesten/mongostore-server",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A full Node.js backend for Serverless applications inspired by Google Firebase",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
