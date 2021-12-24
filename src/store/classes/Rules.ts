@@ -1,7 +1,8 @@
+import { MongoStoreAdmin } from '../../admin'
 import { MongoStoreCollection, MongoStoreDocument } from '../../admin/store'
 
 export type MongoStoreRules = {
-    (req: MongoStoreRulesRequest, res: MongoStoreRulesResponse, {admin}): Promise<void>
+    (req: MongoStoreRulesRequest, res: MongoStoreRulesResponse, {admin}: {admin: MongoStoreAdmin}): Promise<void>
 }
 export class MongoStoreRulesResponse {
     /** Allow getting a document by ID */

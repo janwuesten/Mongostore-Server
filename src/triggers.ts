@@ -1,8 +1,9 @@
 import { MongoStoreServer } from "."
+import { MongoStoreAdmin } from "./admin"
 import { MongoStoreDocument } from "./admin/store"
 
-export type MongoStoreTriggerDocumentTrigger = (document: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
-export type MongoStoreTriggerDocumentUpdateTrigger = (before: MongoStoreDocument, after: MongoStoreDocument, { admin: MongoStoreAdmin }) => void
+export type MongoStoreTriggerDocumentTrigger = (document: MongoStoreDocument, { admin }: {admin: MongoStoreAdmin}) => void
+export type MongoStoreTriggerDocumentUpdateTrigger = (before: MongoStoreDocument, after: MongoStoreDocument, { admin }: {admin: MongoStoreAdmin}) => void
 
 export class MongoStoreTriggers {
     private _server: MongoStoreServer
